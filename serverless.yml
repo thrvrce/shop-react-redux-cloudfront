@@ -4,7 +4,7 @@ frameworkVersion: "3"
 
 provider:
   name: aws
-  runtime: nodejs14.x
+  runtime: nodejs16.x
   region: eu-west-1
   # setup profile for AWS CLI.
   # profile: node-aws
@@ -16,10 +16,23 @@ plugins:
   # How to build your own plugins: https://www.serverless.com/framework/docs/providers/aws/guide/plugins#service-local-plugin
   - serverless-single-page-app-plugin
   - serverless-s3-cleaner
+  - serverless-cloudfront-invalidate # add as the last plugin
 
 custom:
+  # myDistributionId: ${AWS:cloudfront:${self:provider.region}.distributionId}
+  myDistributionId: "E2APV1PD21JO04"
+  cloudfrontInvalidate:
+    - distributionId: ${self:custom.myDistributionId} #conditional, distributionId or distributionIdKey is required.
+      # distributionIdKey: "CDNDistributionId" #conditional, distributionId or distributionIdKey is required.
+      autoInvalidate: true # Can be set to false to avoid automatic invalidation after the deployment. Useful if you want to manually trigger the invalidation later. Defaults to true.
+      items: # one or more paths required
+        - "/*"
+      stage: "dev"  # conditional, the stage that this cloudfront invalidation should be created
+            # this should match the provider's stage you declared, e.g. "dev" but not "prod" in this case
+            # an invalidation for this distribution will be created when executing `sls deploy --stage dev`
+
   client:
-    bucketName: my-store-app
+    bucketName: aws-course-va-2024
     distributionFolder: dist
   s3BucketName: ${self:custom.client.bucketName}
 
@@ -36,12 +49,17 @@ resources:
       Type: AWS::S3::Bucket
       Properties:
         BucketName: ${self:custom.s3BucketName}
-        AccessControl: PublicRead
+        AccessControl: LogDeliveryWrite
         WebsiteConfiguration:
           IndexDocument: index.html
           ErrorDocument: index.html
         # VersioningConfiguration:
         #   Status: Enabled
+        OwnershipControls:
+          Rules:
+            - ObjectOwnership: ObjectWriter
+        PublicAccessBlockConfiguration:
+          BlockPublicPolicy: false
 
     ## Specifying the policies to make sure all files inside the Bucket are avaialble to CloudFront
     WebAppS3BucketPolicy:
@@ -131,3 +149,5 @@ resources:
       Value: !Ref WebAppS3Bucket
     WebAppCloudFrontDistributionOutput:
       Value: !GetAtt WebAppCloudFrontDistribution.DomainName
+
+

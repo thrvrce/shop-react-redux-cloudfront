@@ -1,5 +1,13 @@
 # React-shop-cloudfront
 
+App from S3: [S3 public index.html link](https://aws-react-2024-s3-deploy.s3.eu-north-1.amazonaws.com/index.html)
+
+App from cloudfront:
+- [CloudFront link](https://d1pyrxrazr9scq.cloudfront.net)
+- [Forbidden S3 index.html link](https://aws-react-2024.s3.eu-north-1.amazonaws.com/index.html)
+
+App from cloudfront deployed utomatically: [link](https://d4js34v6mjeza.cloudfront.net/)
+
 This is frontend starter project for nodejs-aws mentoring program. It uses the following technologies:
 
 - [Vite](https://vitejs.dev/) as a project bundler
